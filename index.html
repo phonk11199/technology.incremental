@@ -1,0 +1,955 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>1</title>
+    <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2.2.0/dist/break_infinity.min.js"></script>
+    <style>
+        /* 原有弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover { color: black; }
+        .research-btn {
+            font-size: 20px;
+            margin: 10px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .research-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .max-btn {
+            font-size: 16px;
+            margin-left: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            display: none;
+        }
+        .max-btn:hover { background-color: #45a049; }
+        .lab-btn {
+            font-size: 30px;
+            display: none;
+        }
+        .data-btn {
+            font-size: 30px;
+            display: none;
+            margin-left: 10px;
+        }
+        .rune-btn {
+            font-size: 30px;
+            display: none;
+            margin-left: 10px;
+        }
+        .data-action-btn {
+            font-size: 20px;
+            margin: 10px;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .data-action-btn:hover { background-color: #1976D2; }
+        .bonus-text {
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        /* 全屏界面（白色简洁风格） */
+        .fullscreen-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            overflow-y: auto;
+            color: black;
+        }
+        .fullscreen-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            color: #aaa;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 101;
+        }
+        .fullscreen-close:hover { color: black; }
+        
+        /* 方框样式 */
+        .panel {
+            background-color: white;
+            border: 1px solid #888;
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin: 0 auto;
+        }
+        .panel-title {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .panel-row {
+            font-size: 20px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        .rune-layout {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+            padding: 0 40px;
+        }
+    </style>
+</head>
+<body>
+
+   
+   <p style="font-size: 12px;">科技增量v0.1</p>
+
+   <div style="text-align: center;">
+      <button style="font-size: 30px;" onclick="buyDIP()">获得<span id="DIPC1">0</span>文明数据(需要<span id="DIPC">3</span>文明等级)</button>
+      <span style="font-size: 30px;">文明数据:<span id="DIP">0</span></span>
+   </div>
+
+
+   <p style="text-align: center;font-size: 30px;">当前科技:<span id="number">0</span></p>
+   <p style="text-align: center;font-size: 30px;">当前文明等级:<span id="CLever">0</span></p>
+   
+   <div style="text-align: center;">
+      <button style="font-size: 30px;" onclick="buyIP()">增加人口(需要<span id="IPcost">10</span>点科技点数)</button>
+      <button id="maxIPBtn" class="max-btn" onclick="buyMaxIP()">一键最大</button>
+      <span style="font-size: 30px;">人口:<span id="IPcount">0</span></span>
+   </div>
+   <div style="text-align: center;">
+      <button style="font-size: 30px;" onclick="buyIQ()">增加人口智商(需要<span id="IQcost">100</span>点科技点数)</button>
+      <button id="maxIQBtn" class="max-btn" onclick="buyMaxIQ()">一键最大</button>
+      <span style="font-size: 30px;">人口智商:<span id="IQcount">1</span></span>
+   </div>
+   <div style="text-align: center;">
+      <button id="labBtn" class="lab-btn" onclick="openLab()">研究室</button>
+      <button id="dataBtn" class="data-btn" onclick="openDataCenter()">数据中心</button>
+      <button id="runeBtn" class="rune-btn" onclick="openRune()">符文</button>
+   </div>
+
+   
+   <div style="text-align: center; margin-top: 20px;">
+      <button style="font-size: 20px;" onclick="saveGame()">保存游戏</button>
+      <button style="font-size: 20px;" onclick="loadGame()">读取存档</button>
+      <button style="font-size: 20px;" onclick="resetGame()">重置游戏</button>
+   </div>
+
+   <!-- 研究室弹窗 -->
+   <div id="labModal" class="modal">
+       <div class="modal-content">
+           <span class="close" onclick="closeLab()">&times;</span>
+           <h2 style="text-align: center;">研究室</h2>
+           <p style="text-align: center; font-size: 20px;">当前文明数据：<span id="labDIP">0</span></p>
+           
+           <div style="text-align: center; margin-top: 20px;">
+               <button id="research1Btn" class="research-btn" onclick="research1()">解锁一键购买最大人口（需要10文明数据）</button>
+               <button id="research2Btn" class="research-btn" onclick="research2()">解锁一键购买最大人口智商（需要30文明数据）</button>
+               <button id="research3Btn" class="research-btn" onclick="research3()">升级价格/10（需要50文明数据）</button>
+               <button id="maxResearch3Btn" class="max-btn" style="display: none;" onclick="buyMaxResearch3()">一键最大</button>
+               <br>
+               <button id="research4Btn" class="research-btn" onclick="research4()">解锁一键购买最大/10价格（需要100000000000文明数据）</button>
+           </div>
+       </div>
+   </div>
+
+   <!-- 数据中心弹窗 -->
+   <div id="dataCenterModal" class="modal">
+       <div class="modal-content">
+           <span class="close" onclick="closeDataCenter()">&times;</span>
+           <h2 style="text-align: center;">数据中心</h2>
+           <p style="text-align: center; font-size: 20px;">当前文明模拟值：<span id="simulationValue">0</span></p>
+           
+           <div style="text-align: center; margin-top: 20px;">
+               <button id="dataActionBtn" class="data-action-btn" onclick="dataAction()">开始模拟</button>
+           </div>
+           
+           <div style="text-align: center; margin-top: 20px;">
+               <p class="bonus-text">科技加成：<span id="techBonus">1</span>x</p>
+               <p class="bonus-text">文明数据加成：<span id="dipBonus">0</span></p>
+               <p class="bonus-text" id="runeBatchBonusLine" style="display: none;">符文批量加成：<span id="runeBatchBonus">0</span></p>
+           </div>
+       </div>
+   </div>
+
+   <!-- 符文全屏界面 -->
+   <div id="runeModal" class="fullscreen-modal">
+       <span class="fullscreen-close" onclick="closeRune()">&times;</span>
+       <h1 style="text-align: center; margin-top: 30px;">符文</h1>
+       <div style="text-align: center; margin-top: 15px;">
+           <button class="data-action-btn" onclick="openRuneInv()">符文库存</button>
+       </div>
+       
+       <div class="rune-layout">
+           <!-- 左边方框：符文属性 -->
+           <div class="panel">
+               <div class="panel-title">符文属性</div>
+               <div class="panel-row">RPS：<span id="runeRPS">0</span></div>
+               <div class="panel-row">符文批量：<span id="runeBatch">1</span></div>
+               <div class="panel-row">符文速度：<span id="runeSpeed">1.00s</span></div>
+               <div class="panel-row">符文运气：<span id="runeLuck">1.00</span></div>
+           </div>
+           
+           <!-- 右边方框：符文种类与概率 -->
+           <div class="panel">
+               <div class="panel-title">符文种类与概率</div>
+               <div class="panel-row">符文1概率：<span id="rune1Prob">1/2</span></div>
+               <div class="panel-row">符文2概率：<span id="rune2Prob">1/10</span></div>
+               <div class="panel-row">符文3概率：<span id="rune3Prob">1/100</span></div>
+           </div>
+       </div>
+   </div>
+
+   <!-- 符文库存全屏界面 -->
+   <div id="runeInvModal" class="fullscreen-modal">
+       <span class="fullscreen-close" onclick="closeRuneInv()">&times;</span>
+       <h1 style="text-align: center; margin-top: 30px;">符文库存</h1>
+       
+       <div class="rune-layout">
+                      <div class="panel">
+               <div class="panel-title">符文1</div>
+               <div class="panel-row">数量：<span id="rune1Count">0</span></div>
+               <div class="panel-row">文明数据加成：<span id="rune1BonusText">1*</span></div>
+           </div>
+           <div class="panel">
+               <div class="panel-title">符文2</div>
+               <div class="panel-row">数量：<span id="rune2Count">0</span></div>
+               <div class="panel-row">文明模拟值加成：<span id="rune2BonusText">1*</span></div>
+           </div>
+           <div class="panel">
+               <div class="panel-title">符文3</div>
+               <div class="panel-row">数量：<span id="rune3Count">0</span></div>
+               <div class="panel-row">当前智商价格：<span id="rune3BonusText">/1</span></div>
+           </div>
+       </div>
+   </div>
+
+   
+   <script>
+      var sat = new Decimal(0);                 // 当前科技点数
+      var CLever = 0;                           // 当前文明等级
+      var IP = 0;                               // 当前人口数量
+      var IPC = new Decimal(10);                // 增加人口所需科技点数
+      var IQ = 1;                               // 当前人口智商
+      var IQC = new Decimal(100);               // 增加人口智商所需科技点数
+      var DIPC = 3;                             // 获得文明数据所需文明等级
+      var DIP1 = new Decimal(0);                // 当前文明数据数量
+      var priceReduction = 1;                   // 价格降低倍数
+      var research1Purchased = false;           // 研究1是否已购买
+      var research2Purchased = false;           // 研究2是否已购买
+      var research3Cost = new Decimal(50);      // 研究3当前价格
+      var research4Purchased = false;           // 研究4（一键最大/10价格）是否已购买
+      var labUnlocked = false;                  // 研究室是否已解锁
+      var simulationValue = new Decimal(0);     // 文明模拟值
+      var isSimulating = false;                 // 是否正在模拟
+      var simulationTarget = new Decimal(0);    // 模拟目标值
+      var simulationProgress = 0;               // 模拟进度（毫秒）
+      var initialDIP = new Decimal(0);          // 模拟开始时的文明数据
+      var consumePerMs = new Decimal(0);        // 每毫秒消耗的文明数据（固定值）
+
+      // ===== 符文系统变量 =====
+      var rune1Count = new Decimal(0);          // 符文1数量
+      var rune2Count = new Decimal(0);          // 符文2数量
+      var rune3Count = new Decimal(0);          // 符文3数量
+      var runeBatch = 1;                        // 符文批量
+      var runeSpeed = 1.0;                      // 符文速度
+      var runeLuck = 1.0;                       // 符文运气
+      var runeUnlocked = false;                 // 符文界面是否已解锁
+      var runeTimerAccum = 0;                   // 符文计时累积（毫秒）
+
+      // 初始化按钮状态
+      document.getElementById("maxIPBtn").style.display = "none";
+      document.getElementById("maxIQBtn").style.display = "none";
+      document.getElementById("labBtn").style.display = "none";
+      document.getElementById("dataBtn").style.display = "none";
+      document.getElementById("runeBtn").style.display = "none";
+
+      setInterval(addOne, 10);
+      setInterval(autoSave, 15000);
+      setInterval(autoBuy, 100);
+      setInterval(updateSimulation, 10);
+      setInterval(updateRuneSystem, 10);
+      setInterval(checkRuneUnlock, 100);
+      
+      function formatBonus(num) {
+          if (num.eq(0)) return "0";
+          if (num.lt(0)) return "-" + formatBonus(num.neg());
+          if (num.lt(1000)) return num.toNumber().toFixed(2);
+          return num.toExponential(2);
+      }
+      
+      function formatNumber(num) {
+          if (num.eq(0)) return "0";
+          if (num.lt(0)) return "-" + formatNumber(num.neg());
+          if (num.lt(1)) return num.toNumber().toFixed(2);
+          if (num.lt(1000)) {
+              var n = num.toNumber();
+              return n % 1 === 0 ? n.toString() : n.toFixed(2);
+          }
+          if (num.lt(1e6)) return Math.floor(num.toNumber()).toString();
+          return num.toExponential(2);
+      }
+
+      // ===== 符文加成函数 =====
+      function getRuneBatchBonus() {
+          if (simulationValue.lte(1)) return 0;
+          return Math.floor(simulationValue.log10());
+      }
+
+      function getRune1Bonus() {
+          return rune1Count.add(1);
+      }
+
+      function getRune2Bonus() {
+          return rune2Count.add(1);
+      }
+
+      function getRune3Bonus() {
+          return IQC.div(priceReduction).floor().div(rune3Count.add(1)).floor();
+      }
+
+      function addOne() {
+          var techBonus = new Decimal(1);
+          if (simulationValue.gte(1)) {
+              techBonus = simulationValue.sqrt();
+          }
+          var iqBonus;
+          if (IQ > 1000) {
+              iqBonus = new Decimal(10).pow(IQ * 0.30103);
+          } else {
+              iqBonus = new Decimal(2).pow(IQ);
+          }
+          var Mp = new Decimal(1 + IP)
+              .mul(iqBonus)
+              .mul(techBonus)
+              .mul(DIP1.add(1).floor());
+          sat = sat.add(Mp);
+          
+          if (sat.gt(1000)) {
+              CLever = sat.log10() - 3;
+          } else {
+              CLever = 0;
+          }
+          
+          updateDisplay();
+      }
+      
+      function buyIP() {
+          var actualCost = IPC.div(priceReduction).floor();
+          if (sat.gte(actualCost)) {
+              sat = sat.sub(actualCost);
+              IPC = IPC.mul(1.2).floor().add(1);
+              IP = IP + 1;
+              updateDisplay();
+          }
+      }
+      
+      function buyIQ() {
+          var actualCost = getRune3Bonus();
+          if (actualCost.lt(0)) actualCost = new Decimal(0);
+          if (sat.gte(actualCost)) {
+              sat = sat.sub(actualCost);
+              IQC = IQC.mul(3).floor().add(1);
+              IQ = IQ + 1;
+              updateDisplay();
+          }
+      }
+      
+      function autoBuy() {
+          var actualIPCost = IPC.div(priceReduction).floor();
+          var actualIQCost = getRune3Bonus();
+          if (actualIQCost.lt(0)) actualIQCost = new Decimal(0);
+          
+          var safety1 = 0;
+          while (actualIPCost.lt(1) && sat.gte(actualIPCost) && safety1 < 10000) {
+              safety1++;
+              sat = sat.sub(actualIPCost);
+              IPC = IPC.mul(1.2).floor().add(1);
+              IP = IP + 1;
+              actualIPCost = IPC.div(priceReduction).floor();
+          }
+          
+          var safety2 = 0;
+          while (actualIQCost.lt(1) && sat.gte(actualIQCost) && safety2 < 10000) {
+              safety2++;
+              sat = sat.sub(actualIQCost);
+              IQC = IQC.mul(3).floor().add(1);
+              IQ = IQ + 1;
+              actualIQCost = getRune3Bonus();
+              if (actualIQCost.lt(0)) actualIQCost = new Decimal(0);
+          }
+          
+          if (actualIPCost.lt(1) || actualIQCost.lt(1)) {
+              updateDisplay();
+          }
+      }
+      
+      function buyMaxIP() {
+          if (!research1Purchased) return;
+          var actualCost = IPC.div(priceReduction).floor();
+          var safety = 0;
+          while (sat.gte(actualCost) && actualCost.gt(0) && safety < 10000) {
+              safety++;
+              sat = sat.sub(actualCost);
+              IPC = IPC.mul(1.2).floor().add(1);
+              IP = IP + 1;
+              actualCost = IPC.div(priceReduction).floor();
+          }
+          updateDisplay();
+      }
+      
+      function buyMaxIQ() {
+          if (!research2Purchased) return;
+          var actualCost = getRune3Bonus();
+          if (actualCost.lt(0)) actualCost = new Decimal(0);
+          var safety = 0;
+          while (sat.gte(actualCost) && actualCost.gt(0) && safety < 10000) {
+              safety++;
+              sat = sat.sub(actualCost);
+              IQC = IQC.mul(3).floor().add(1);
+              IQ = IQ + 1;
+              actualCost = getRune3Bonus();
+              if (actualCost.lt(0)) actualCost = new Decimal(0);
+          }
+          updateDisplay();
+      }
+
+      function buyMaxResearch3() {
+          if (!research4Purchased) return;
+          var safety = 0;
+          while (DIP1.gte(research3Cost) && safety < 10000) {
+              safety++;
+              DIP1 = DIP1.sub(research3Cost);
+              research3Cost = research3Cost.mul(1.2).floor();
+              priceReduction *= 10;
+          }
+          updateLabDisplay();
+          updateDisplay();
+      }
+
+      function buyDIP() {
+          if (CLever >= DIPC) {
+              var dipBonus = new Decimal(0);
+              if (simulationValue.gte(20)) {
+                  dipBonus = simulationValue.sub(20).sqrt();
+              }
+              var dipGain = new Decimal(CLever).pow(4).mul(dipBonus.add(1)).mul(getRune1Bonus());
+              DIP1 = DIP1.add(dipGain);
+              
+              if (!labUnlocked && DIP1.gt(0)) {
+                  labUnlocked = true;
+                  document.getElementById("labBtn").style.display = "inline-block";
+                  document.getElementById("dataBtn").style.display = "inline-block";
+              }
+              
+              sat = new Decimal(0);
+              IP = 0;
+              IPC = new Decimal(10);
+              IQ = 1;
+              IQC = new Decimal(100);
+              
+              updateDisplay();
+          }
+      }
+      
+      function openLab() {
+          if (!labUnlocked) return;
+          document.getElementById("labModal").style.display = "block";
+          updateLabDisplay();
+      }
+      
+      function closeLab() {
+          document.getElementById("labModal").style.display = "none";
+      }
+      
+      function openDataCenter() {
+          document.getElementById("dataCenterModal").style.display = "block";
+          updateDataCenterDisplay();
+      }
+      
+      function closeDataCenter() {
+          document.getElementById("dataCenterModal").style.display = "none";
+      }
+      
+      function updateDataCenterDisplay() {
+          document.getElementById("simulationValue").textContent = formatNumber(simulationValue);
+          
+          if (simulationValue.gte(1)) {
+              var techBonusValue = simulationValue.sqrt();
+              if (techBonusValue.lt(1.005)) {
+                  document.getElementById("techBonus").textContent = "1x";
+              } else {
+                  document.getElementById("techBonus").textContent = formatBonus(techBonusValue) + "x";
+              }
+          } else {
+              document.getElementById("techBonus").textContent = "1x";
+          }
+          
+          if (simulationValue.gte(20)) {
+              var dipBonusValue = simulationValue.sub(20).sqrt();
+              document.getElementById("dipBonus").textContent = formatBonus(dipBonusValue);
+          } else {
+              document.getElementById("dipBonus").textContent = "0";
+          }
+          
+          var runeBatchBonusLine = document.getElementById("runeBatchBonusLine");
+          if (runeUnlocked) {
+              runeBatchBonusLine.style.display = "block";
+              document.getElementById("runeBatchBonus").textContent = getRuneBatchBonus();
+          } else {
+              runeBatchBonusLine.style.display = "none";
+          }
+      }
+      
+      function dataAction() {
+          if (DIP1.lte(0) || isSimulating) return;
+          
+          initialDIP = DIP1;
+          consumePerMs = initialDIP.mul(0.002);
+          simulationTarget = initialDIP.pow(1.5).mul(getRune2Bonus());
+          simulationProgress = 0;
+          isSimulating = true;
+          
+          updateDataCenterDisplay();
+          updateDisplay();
+      }
+      
+      function updateSimulation() {
+          if (!isSimulating) return;
+          
+          simulationProgress += 10;
+          DIP1 = DIP1.sub(consumePerMs.mul(10));
+          if (DIP1.lt(0)) DIP1 = new Decimal(0);
+          
+          if (simulationProgress >= 5000 || DIP1.lte(0)) {
+              simulationValue = simulationTarget;
+              isSimulating = false;
+          } else {
+              simulationValue = simulationTarget.mul(simulationProgress / 5000);
+          }
+          
+          updateDataCenterDisplay();
+          updateDisplay();
+      }
+      
+      function checkRuneUnlock() {
+          if (!runeUnlocked && simulationValue.gt(10000)) {
+              runeUnlocked = true;
+              document.getElementById("runeBtn").style.display = "inline-block";
+          }
+      }
+      
+      function updateLabDisplay() {
+          document.getElementById("labDIP").textContent = formatNumber(DIP1);
+          
+          document.getElementById("research1Btn").disabled = research1Purchased;
+          document.getElementById("research2Btn").disabled = research2Purchased;
+          
+          if (research1Purchased) {
+              document.getElementById("research1Btn").textContent = "已解锁一键购买最大人口";
+          } else {
+              document.getElementById("research1Btn").textContent = "解锁一键购买最大人口（需要10文明数据）";
+          }
+          if (research2Purchased) {
+              document.getElementById("research2Btn").textContent = "已解锁一键购买最大人口智商";
+          } else {
+              document.getElementById("research2Btn").textContent = "解锁一键购买最大人口智商（需要30文明数据）";
+          }
+          
+          document.getElementById("research3Btn").textContent = "升级价格/10（需要" + formatNumber(research3Cost) + "文明数据）";
+          
+                    var r4Btn = document.getElementById("research4Btn");
+          r4Btn.disabled = research4Purchased;
+          if (research4Purchased) {
+              r4Btn.textContent = "已解锁一键购买最大/10价格";
+          } else {
+              r4Btn.textContent = "解锁一键购买最大/10价格（需要100000000000文明数据）";
+          }
+    }
+      
+      function research1() {
+          if (!research1Purchased && DIP1.gte(10)) {
+              DIP1 = DIP1.sub(10);
+              research1Purchased = true;
+              document.getElementById("maxIPBtn").style.display = "inline-block";
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
+      
+      function research2() {
+          if (!research2Purchased && DIP1.gte(30)) {
+              DIP1 = DIP1.sub(30);
+              research2Purchased = true;
+              document.getElementById("maxIQBtn").style.display = "inline-block";
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
+      
+      function research3() {
+          if (DIP1.gte(research3Cost)) {
+              DIP1 = DIP1.sub(research3Cost);
+              research3Cost = research3Cost.mul(1.2).floor();
+              priceReduction *= 10;
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
+      
+            function research4() {
+          if (!research4Purchased && DIP1.gte(new Decimal(100000000000))) {
+              DIP1 = DIP1.sub(new Decimal(100000000000));
+              research4Purchased = true;
+              document.getElementById("maxResearch3Btn").style.display = "inline-block";
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
+      
+      // ===== 符文系统功能 =====
+      
+      function openRune() {
+          if (!runeUnlocked) return;
+          document.getElementById("runeModal").style.display = "block";
+          updateRuneDisplay();
+      }
+      
+      function closeRune() {
+          document.getElementById("runeModal").style.display = "none";
+      }
+      
+      function openRuneInv() {
+          if (!runeUnlocked) return;
+          document.getElementById("runeModal").style.display = "none";
+          document.getElementById("runeInvModal").style.display = "block";
+          updateRuneDisplay();
+      }
+      
+      function closeRuneInv() {
+          document.getElementById("runeInvModal").style.display = "none";
+          document.getElementById("runeModal").style.display = "block";
+          updateRuneDisplay();
+      }
+      
+      function getRPS() {
+          var actualBatch = runeBatch + getRuneBatchBonus();
+          return actualBatch * (1 / runeSpeed);
+      }
+      
+      function getRune1Denom() {
+          return Math.max(2 / runeLuck, 1);
+      }
+      function getRune2Denom() {
+          return Math.max(10 / runeLuck, 1);
+      }
+      function getRune3Denom() {
+          return Math.max(100 / runeLuck, 1);
+      }
+      
+      function formatProb(denom) {
+          if (denom <= 1) return "1/1 (必出)";
+          return "1/" + denom.toFixed(2);
+      }
+      
+      function updateRuneDisplay() {
+          document.getElementById("runeRPS").textContent = getRPS().toFixed(2);
+          document.getElementById("runeBatch").textContent = runeBatch + getRuneBatchBonus();
+          document.getElementById("runeSpeed").textContent = runeSpeed.toFixed(2) + "s";
+          document.getElementById("runeLuck").textContent = runeLuck.toFixed(2);
+          
+          document.getElementById("rune1Prob").textContent = formatProb(getRune1Denom());
+          document.getElementById("rune2Prob").textContent = formatProb(getRune2Denom());
+          document.getElementById("rune3Prob").textContent = formatProb(getRune3Denom());
+          
+          document.getElementById("rune1Count").textContent = formatNumber(rune1Count);
+          document.getElementById("rune2Count").textContent = formatNumber(rune2Count);
+          document.getElementById("rune3Count").textContent = formatNumber(rune3Count);
+          
+                    document.getElementById("rune1BonusText").textContent = formatNumber(getRune1Bonus()) + "*";
+          document.getElementById("rune2BonusText").textContent = formatNumber(getRune2Bonus()) + "*";
+          document.getElementById("rune3BonusText").textContent = "/" + formatNumber(rune3Count.add(1));
+      }
+      
+      function rollRune() {
+          var r = Math.random();
+          
+          var d1 = getRune1Denom();
+          var d2 = getRune2Denom();
+          var d3 = getRune3Denom();
+          
+          if (r < 1 / d3) {
+              return 3;
+          } else if (r < 1 / d3 + 1 / d2) {
+              return 2;
+          } else if (r < 1 / d3 + 1 / d2 + 1 / d1) {
+              return 1;
+          }
+          return 0;
+      }
+      
+      function updateRuneSystem() {
+          if (!runeUnlocked) return;
+          
+          runeTimerAccum += 10;
+          
+          var intervalMs = runeSpeed * 1000;
+          var actualBatch = runeBatch + getRuneBatchBonus();
+          
+          while (runeTimerAccum >= intervalMs) {
+              runeTimerAccum -= intervalMs;
+              
+              for (var i = 0; i < actualBatch; i++) {
+                  var type = rollRune();
+                  if (type === 1) {
+                      rune1Count = rune1Count.add(1);
+                  } else if (type === 2) {
+                      rune2Count = rune2Count.add(1);
+                  } else if (type === 3) {
+                      rune3Count = rune3Count.add(1);
+                  }
+              }
+          }
+          
+          if (document.getElementById("runeModal").style.display === "block" ||
+              document.getElementById("runeInvModal").style.display === "block") {
+              updateRuneDisplay();
+          }
+      }
+      
+      function updateDisplay() {
+          document.getElementById("number").textContent = formatNumber(sat);
+          document.getElementById("IPcount").textContent = formatNumber(new Decimal(IP));
+          document.getElementById("IPcost").textContent = formatNumber(IPC.div(priceReduction).floor());
+          document.getElementById("IQcount").textContent = formatNumber(new Decimal(IQ));
+          document.getElementById("IQcost").textContent = formatNumber(getRune3Bonus());
+          document.getElementById("DIP").textContent = formatNumber(DIP1);
+          document.getElementById("DIPC").textContent = DIPC.toString();
+          
+          var dipBonus = new Decimal(0);
+          if (simulationValue.gte(20)) {
+              dipBonus = simulationValue.sub(20).sqrt();
+          }
+          var potentialDIP = new Decimal(CLever).pow(4).mul(dipBonus.add(1)).mul(getRune1Bonus());
+          document.getElementById("DIPC1").textContent = formatNumber(potentialDIP);
+          
+          document.getElementById("CLever").textContent = CLever.toFixed(1);
+          
+          document.getElementById("maxIPBtn").style.display = research1Purchased ? "inline-block" : "none";
+          document.getElementById("maxIQBtn").style.display = research2Purchased ? "inline-block" : "none";
+          document.getElementById("labBtn").style.display = labUnlocked ? "inline-block" : "none";
+          document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
+          document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
+          
+          if (document.getElementById("labModal").style.display === "block") {
+              updateLabDisplay();
+          }
+          if (document.getElementById("dataCenterModal").style.display === "block") {
+              updateDataCenterDisplay();
+          }
+          if (document.getElementById("runeModal").style.display === "block" ||
+              document.getElementById("runeInvModal").style.display === "block") {
+              updateRuneDisplay();
+          }
+      }
+      
+      function saveGame() {
+          var gameData = {
+              sat: sat.toString(),
+              IP: IP,
+              IPC: IPC.toString(),
+              IQ: IQ,
+              IQC: IQC.toString(),
+              CLever: CLever,
+              DIPC: DIPC,
+              DIP1: DIP1.toString(),
+              priceReduction: priceReduction,
+              research1Purchased: research1Purchased,
+              research2Purchased: research2Purchased,
+              research3Cost: research3Cost.toString(),
+              research4Purchased: research4Purchased,
+              labUnlocked: labUnlocked,
+              simulationValue: simulationValue.toString(),
+              isSimulating: isSimulating,
+              simulationTarget: simulationTarget.toString(),
+              simulationProgress: simulationProgress,
+              initialDIP: initialDIP.toString(),
+              consumePerMs: consumePerMs.toString(),
+              rune1Count: rune1Count.toString(),
+              rune2Count: rune2Count.toString(),
+              rune3Count: rune3Count.toString(),
+              runeBatch: runeBatch,
+              runeSpeed: runeSpeed,
+              runeLuck: runeLuck,
+              runeUnlocked: runeUnlocked,
+              runeTimerAccum: runeTimerAccum
+          };
+          localStorage.setItem('gameSave', JSON.stringify(gameData));
+          console.log('游戏已保存');
+      }
+      
+      function autoSave() {
+          saveGame();
+          showSaveIndicator();
+      }
+      
+      function showSaveIndicator() {
+          var indicator = document.createElement('div');
+          indicator.textContent = '已自动保存';
+          indicator.style.cssText = 'position: fixed; top: 10px; right: 10px; background: #4CAF50; color: white; padding: 10px; border-radius: 5px; transition: opacity 1s;';
+          document.body.appendChild(indicator);
+          
+          setTimeout(function() {
+              indicator.style.opacity = '0';
+              setTimeout(function() {
+                  document.body.removeChild(indicator);
+              }, 1000);
+          }, 2000);
+      }
+      
+      function loadGame() {
+          var savedData = localStorage.getItem('gameSave');
+          if (savedData) {
+              var gameData = JSON.parse(savedData);
+              sat = new Decimal(gameData.sat || 0);
+              IP = gameData.IP || 0;
+              IPC = new Decimal(gameData.IPC || 10);
+              IQ = gameData.IQ || 1;
+              IQC = new Decimal(gameData.IQC || 100);
+              CLever = gameData.CLever || 0;
+              DIPC = gameData.DIPC || 3;
+              DIP1 = new Decimal(gameData.DIP1 || 0);
+              priceReduction = gameData.priceReduction || 1;
+              research1Purchased = gameData.research1Purchased || false;
+              research2Purchased = gameData.research2Purchased || false;
+              research3Cost = new Decimal(gameData.research3Cost || 50);
+              research4Purchased = gameData.research4Purchased || false;
+              labUnlocked = gameData.labUnlocked || false;
+              simulationValue = new Decimal(gameData.simulationValue || 0);
+              isSimulating = gameData.isSimulating || false;
+              simulationTarget = new Decimal(gameData.simulationTarget || 0);
+              simulationProgress = gameData.simulationProgress || 0;
+              initialDIP = new Decimal(gameData.initialDIP || 0);
+              consumePerMs = new Decimal(gameData.consumePerMs || 0);
+              rune1Count = new Decimal(gameData.rune1Count || 0);
+              rune2Count = new Decimal(gameData.rune2Count || 0);
+              rune3Count = new Decimal(gameData.rune3Count || 0);
+              runeBatch = gameData.runeBatch || 1;
+              runeSpeed = gameData.runeSpeed || 1.0;
+              runeLuck = gameData.runeLuck || 1.0;
+              runeUnlocked = gameData.runeUnlocked || false;
+              runeTimerAccum = gameData.runeTimerAccum || 0;
+              
+              document.getElementById("maxIPBtn").style.display = research1Purchased ? "inline-block" : "none";
+              document.getElementById("maxIQBtn").style.display = research2Purchased ? "inline-block" : "none";
+              document.getElementById("labBtn").style.display = labUnlocked ? "inline-block" : "none";
+              document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
+              document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
+              document.getElementById("maxResearch3Btn").style.display = research4Purchased ? "inline-block" : "none";
+              
+              updateDisplay();
+              alert('存档已读取！');
+          } else {
+              alert('没有找到存档！');
+          }
+      }
+      
+      function resetGame() {
+          if (confirm('确定要重置游戏吗？')) {
+              sat = new Decimal(0);
+              CLever = 0;
+              IP = 0;
+              IPC = new Decimal(10);
+              IQ = 1;
+              IQC = new Decimal(100);
+              DIPC = 3;
+              DIP1 = new Decimal(0);
+              priceReduction = 1;
+              research1Purchased = false;
+              research2Purchased = false;
+              research3Cost = new Decimal(50);
+              research4Purchased = false;
+              labUnlocked = false;
+              simulationValue = new Decimal(0);
+              isSimulating = false;
+              simulationTarget = new Decimal(0);
+              simulationProgress = 0;
+              initialDIP = new Decimal(0);
+              consumePerMs = new Decimal(0);
+              rune1Count = new Decimal(0);
+              rune2Count = new Decimal(0);
+              rune3Count = new Decimal(0);
+              runeBatch = 1;
+              runeSpeed = 1.0;
+              runeLuck = 1.0;
+              runeUnlocked = false;
+              runeTimerAccum = 0;
+              
+              document.getElementById("maxIPBtn").style.display = "none";
+              document.getElementById("maxIQBtn").style.display = "none";
+              document.getElementById("labBtn").style.display = "none";
+              document.getElementById("dataBtn").style.display = "none";
+              document.getElementById("runeBtn").style.display = "none";
+              document.getElementById("maxResearch3Btn").style.display = "none";
+              
+              localStorage.removeItem('gameSave');
+              updateDisplay();
+          }
+      }
+      
+      window.onclick = function(event) {
+          if (event.target == document.getElementById("labModal")) {
+              closeLab();
+          }
+          if (event.target == document.getElementById("dataCenterModal")) {
+              closeDataCenter();
+          }
+      }
+      
+      window.onload = function() {
+          loadGame();
+      };
+   </script>
+</body>
+</html>
