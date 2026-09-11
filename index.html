@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>1</title>
+    <title>technology.incremental</title>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2.2.0/dist/break_infinity.min.js"></script>
     <style>
         /* 原有弹窗样式 */
@@ -184,9 +184,9 @@
            <p style="text-align: center; font-size: 20px;">当前文明数据：<span id="labDIP">0</span></p>
            
            <div style="text-align: center; margin-top: 20px;">
-               <button id="research1Btn" class="research-btn" onclick="research1()">解锁一键购买最大人口（需要10文明数据）</button>
-               <button id="research2Btn" class="research-btn" onclick="research2()">解锁一键购买最大人口智商（需要30文明数据）</button>
-               <button id="research3Btn" class="research-btn" onclick="research3()">升级价格/10（需要50文明数据）</button>
+               <button id="research1Btn" class="research-btn" onclick="research1()">解锁一键购买最大人口（需要200文明数据）</button>
+               <button id="research2Btn" class="research-btn" onclick="research2()">解锁一键购买最大人口智商（需要1000文明数据）</button>
+               <button id="research3Btn" class="research-btn" onclick="research3()">升级价格/10（需要500000文明数据）</button>
                <button id="maxResearch3Btn" class="max-btn" style="display: none;" onclick="buyMaxResearch3()">一键最大</button>
                <br>
                <button id="research4Btn" class="research-btn" onclick="research4()">解锁一键购买最大/10价格（需要100000000000文明数据）</button>
@@ -247,7 +247,7 @@
        <h1 style="text-align: center; margin-top: 30px;">符文库存</h1>
        
        <div class="rune-layout">
-                      <div class="panel">
+           <div class="panel">
                <div class="panel-title">符文1</div>
                <div class="panel-row">数量：<span id="rune1Count">0</span></div>
                <div class="panel-row">文明数据加成：<span id="rune1BonusText">1*</span></div>
@@ -278,7 +278,7 @@
       var priceReduction = 1;                   // 价格降低倍数
       var research1Purchased = false;           // 研究1是否已购买
       var research2Purchased = false;           // 研究2是否已购买
-      var research3Cost = new Decimal(50);      // 研究3当前价格
+      var research3Cost = new Decimal(500000);  // 研究3当前价格
       var research4Purchased = false;           // 研究4（一键最大/10价格）是否已购买
       var labUnlocked = false;                  // 研究室是否已解锁
       var simulationValue = new Decimal(0);     // 文明模拟值
@@ -461,7 +461,7 @@
           while (DIP1.gte(research3Cost) && safety < 10000) {
               safety++;
               DIP1 = DIP1.sub(research3Cost);
-              research3Cost = research3Cost.mul(1.2).floor();
+              research3Cost = research3Cost.mul(2).floor();
               priceReduction *= 10;
           }
           updateLabDisplay();
@@ -589,28 +589,28 @@
           if (research1Purchased) {
               document.getElementById("research1Btn").textContent = "已解锁一键购买最大人口";
           } else {
-              document.getElementById("research1Btn").textContent = "解锁一键购买最大人口（需要10文明数据）";
+              document.getElementById("research1Btn").textContent = "解锁一键购买最大人口（需要200文明数据）";
           }
           if (research2Purchased) {
               document.getElementById("research2Btn").textContent = "已解锁一键购买最大人口智商";
           } else {
-              document.getElementById("research2Btn").textContent = "解锁一键购买最大人口智商（需要30文明数据）";
+              document.getElementById("research2Btn").textContent = "解锁一键购买最大人口智商（需要1000文明数据）";
           }
           
           document.getElementById("research3Btn").textContent = "升级价格/10（需要" + formatNumber(research3Cost) + "文明数据）";
           
-                    var r4Btn = document.getElementById("research4Btn");
+          var r4Btn = document.getElementById("research4Btn");
           r4Btn.disabled = research4Purchased;
           if (research4Purchased) {
               r4Btn.textContent = "已解锁一键购买最大/10价格";
           } else {
               r4Btn.textContent = "解锁一键购买最大/10价格（需要100000000000文明数据）";
           }
-    }
+      }
       
       function research1() {
-          if (!research1Purchased && DIP1.gte(10)) {
-              DIP1 = DIP1.sub(10);
+          if (!research1Purchased && DIP1.gte(200)) {
+              DIP1 = DIP1.sub(200);
               research1Purchased = true;
               document.getElementById("maxIPBtn").style.display = "inline-block";
               updateLabDisplay();
@@ -619,8 +619,8 @@
       }
       
       function research2() {
-          if (!research2Purchased && DIP1.gte(30)) {
-              DIP1 = DIP1.sub(30);
+          if (!research2Purchased && DIP1.gte(1000)) {
+              DIP1 = DIP1.sub(1000);
               research2Purchased = true;
               document.getElementById("maxIQBtn").style.display = "inline-block";
               updateLabDisplay();
@@ -631,14 +631,14 @@
       function research3() {
           if (DIP1.gte(research3Cost)) {
               DIP1 = DIP1.sub(research3Cost);
-              research3Cost = research3Cost.mul(1.2).floor();
+              research3Cost = research3Cost.mul(2).floor();
               priceReduction *= 10;
               updateLabDisplay();
               updateDisplay();
           }
       }
       
-            function research4() {
+      function research4() {
           if (!research4Purchased && DIP1.gte(new Decimal(100000000000))) {
               DIP1 = DIP1.sub(new Decimal(100000000000));
               research4Purchased = true;
@@ -707,7 +707,7 @@
           document.getElementById("rune2Count").textContent = formatNumber(rune2Count);
           document.getElementById("rune3Count").textContent = formatNumber(rune3Count);
           
-                    document.getElementById("rune1BonusText").textContent = formatNumber(getRune1Bonus()) + "*";
+          document.getElementById("rune1BonusText").textContent = formatNumber(getRune1Bonus()) + "*";
           document.getElementById("rune2BonusText").textContent = formatNumber(getRune2Bonus()) + "*";
           document.getElementById("rune3BonusText").textContent = "/" + formatNumber(rune3Count.add(1));
       }
@@ -863,7 +863,7 @@
               priceReduction = gameData.priceReduction || 1;
               research1Purchased = gameData.research1Purchased || false;
               research2Purchased = gameData.research2Purchased || false;
-              research3Cost = new Decimal(gameData.research3Cost || 50);
+              research3Cost = new Decimal(gameData.research3Cost || 500000);
               research4Purchased = gameData.research4Purchased || false;
               labUnlocked = gameData.labUnlocked || false;
               simulationValue = new Decimal(gameData.simulationValue || 0);
@@ -908,7 +908,7 @@
               priceReduction = 1;
               research1Purchased = false;
               research2Purchased = false;
-              research3Cost = new Decimal(50);
+              research3Cost = new Decimal(500000);
               research4Purchased = false;
               labUnlocked = false;
               simulationValue = new Decimal(0);
