@@ -4,7 +4,6 @@
     <title>technology incremental</title>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2.2.0/dist/break_infinity.min.js"></script>
     <style>
-        /* 原有弹窗样式 */
         .modal {
             display: none;
             position: fixed;
@@ -49,13 +48,8 @@
             margin-left: 5px;
             padding: 5px 10px;
             cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
             display: none;
         }
-        .max-btn:hover { background-color: #45a049; }
         .lab-btn {
             font-size: 30px;
             display: none;
@@ -70,23 +64,21 @@
             display: none;
             margin-left: 10px;
         }
+        .calc-btn {
+            font-size: 30px;
+            display: none;
+            margin-left: 10px;
+        }
         .data-action-btn {
             font-size: 20px;
             margin: 10px;
             padding: 10px;
             cursor: pointer;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 5px;
         }
-        .data-action-btn:hover { background-color: #1976D2; }
         .bonus-text {
             font-size: 16px;
             margin: 5px;
         }
-        
-        /* 全屏界面（白色简洁风格） */
         .fullscreen-modal {
             display: none;
             position: fixed;
@@ -110,8 +102,6 @@
             z-index: 101;
         }
         .fullscreen-close:hover { color: black; }
-        
-        /* 方框样式 */
         .panel {
             background-color: white;
             border: 1px solid #888;
@@ -138,8 +128,6 @@
             margin-top: 30px;
             padding: 0 40px;
         }
-        
-        /* 符文小方框 */
         .rune-small-layout {
             display: flex;
             justify-content: center;
@@ -172,7 +160,7 @@
 <body>
 
    
-      <p style="font-size: 12px;">科技增量v0.15</p>
+      <p style="font-size: 12px;">科技增量v0.21</p>
    <button style="font-size: 14px; padding: 3px 10px; cursor: pointer;" onclick="openUpdate()">更新日志</button>
    <p>作者qq:3923423995</p>
 
@@ -189,16 +177,19 @@
       <button style="font-size: 30px;" onclick="buyIP()">增加人口(需要<span id="IPcost">10</span>点科技点数)</button>
       <button id="maxIPBtn" class="max-btn" onclick="buyMaxIP()">一键最大</button>
       <span style="font-size: 30px;">人口:<span id="IPcount">0</span></span>
+      <p style="font-size: 20px;">效果:+<span id="IPBonusText">0</span></p>
    </div>
    <div style="text-align: center;">
       <button style="font-size: 30px;" onclick="buyIQ()">增加人口智商(需要<span id="IQcost">100</span>点科技点数)</button>
       <button id="maxIQBtn" class="max-btn" onclick="buyMaxIQ()">一键最大</button>
       <span style="font-size: 30px;">人口智商:<span id="IQcount">1</span></span>
+      <p style="font-size: 20px;">效果:×<span id="IQBonusText">2</span></p>
    </div>
    <div style="text-align: center;">
       <button id="labBtn" class="lab-btn" onclick="openLab()">研究室</button>
       <button id="dataBtn" class="data-btn" onclick="openDataCenter()">数据中心</button>
       <button id="runeBtn" class="rune-btn" onclick="openRune()">符文</button>
+      <button id="calcBtn" class="calc-btn" onclick="openCalc()">计算机</button>
    </div>
 
    
@@ -214,9 +205,15 @@
            <span class="close" onclick="closeUpdate()">&times;</span>
            <h2 style="text-align: center;">更新日志</h2>
            <div style="text-align: left; font-size: 16px; height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
-               <p><b>v0.16</b></p>
-               <p>修改了数据中心里符文批量显示的bug</p>
-               <p>修改了符文里符文4加成的显示</p>
+               <p><b>v0.21</b></p>
+               <p>新增了人口基因突变</p>
+               <p>新增了更好的人口</p>
+               <p>科技增加量改为 (所有科技加成)^科技指数</p>
+               <p>主界面显示人口和智商加成</p>
+               <p><b>v0.2</b></p>
+               <p>新增了计算机界面</p>
+               <p>新增了算力系统</p>
+               <p>新增了自动购买最大人口和智商</p>
                <p><b>v0.15</b><p>
                <p>取消了符文库存</p>
                <p>更改了数据中心里符文批量加成的计算方式</p>
@@ -241,6 +238,9 @@
                <button id="maxResearch3Btn" class="max-btn" style="display: none;" onclick="buyMaxResearch3()">一键最大</button>
                <br>
                <button id="research4Btn" class="research-btn" onclick="research4()">解锁一键购买最大/10价格（需要100000000000文明数据）</button>
+               <br>
+               <button id="autoBuyIPBtn" class="research-btn" style="display: none;" onclick="buyAutoBuyIP()">自动购买最大人口（需要5000算力）</button>
+               <button id="autoBuyIQBtn" class="research-btn" style="display: none;" onclick="buyAutoBuyIQ()">自动购买最大人口智商（需要10000算力）</button>
            </div>
        </div>
    </div>
@@ -270,7 +270,6 @@
        <h1 style="text-align: center; margin-top: 30px;">符文</h1>
        
        <div class="rune-layout">
-           <!-- 左边方框：符文属性 -->
            <div class="panel">
                <div class="panel-title">符文属性</div>
                <div class="panel-row">RPS：<span id="runeRPS">0</span></div>
@@ -280,7 +279,6 @@
                <div class="panel-row">符文运气：<span id="runeLuck">1.00</span></div>
            </div>
            
-           <!-- 右边方框：符文种类与概率 -->
            <div class="panel">
                <div class="panel-title">符文种类与概率</div>
                <div class="panel-row">符文1概率：<span id="rune1Prob">1/2</span></div>
@@ -291,7 +289,6 @@
            </div>
        </div>
        
-       <!-- 下方方框：符文数量与加成（小尺寸） -->
        <div class="rune-small-layout">
            <div class="panel-small">
                <div class="panel-title">符文1</div>
@@ -311,7 +308,7 @@
            <div class="panel-small">
                <div class="panel-title">符文4</div>
                <div class="panel-row">数量：<span id="rune4Count">0</span></div>
-               <div class="panel-row">符文批量加成：<span id="rune4BonusText">+0</span></div>
+               <div class="panel-row">符文批量加成：<span id="rune4BonusText">*0</span></div>
            </div>
            <div class="panel-small">
                <div class="panel-title">符文5</div>
@@ -321,47 +318,85 @@
        </div>
    </div>
 
+   <!-- 计算机全屏界面 -->
+   <div id="calcModal" class="fullscreen-modal">
+       <span class="fullscreen-close" onclick="closeCalc()">&times;</span>
+       <h1 style="text-align: center; margin-top: 30px;">计算机</h1>
+       
+       <p style="text-align: center; font-size: 28px; margin-top: 40px;">当前算力：<span id="calcPowerDisplay">0</span></p>
+       
+       <div style="text-align: center; margin-top: 40px;">
+           <button id="calcBuyBtn" class="data-action-btn" style="font-size: 24px; padding: 15px 30px;" onclick="buyCalcPower()">
+               获取<span id="calcRateText">0</span>算力每秒
+           </button>
+       </div>
+       
+       <div style="text-align: center; margin-top: 40px;">
+           <button id="geneMutationBtn" class="data-action-btn" style="font-size: 20px; padding: 12px 25px; margin: 10px;" onclick="buyGeneMutation()">
+               人口基因突变（需要<span id="geneMutationCost">1000</span>算力）
+           </button>
+           <p style="font-size: 18px; margin: 5px 0;">等级：<span id="geneMutationLevel">0</span>　科技指数 +<span id="geneMutationBonus">0</span></p>
+           
+           <button id="betterPopBtn" class="data-action-btn" style="font-size: 20px; padding: 12px 25px; margin: 10px;" onclick="buyBetterPop()">
+               更好的人口（需要<span id="betterPopCost">15000</span>算力）
+           </button>
+           <p style="font-size: 18px; margin: 5px 0;">等级：<span id="betterPopLevel">0</span>　人口获取 ×<span id="betterPopBonus">1</span></p>
+       </div>
+   </div>
+
    
    <script>
-      var sat = new Decimal(0);                 // 当前科技点数
-      var CLever = 0;                           // 当前文明等级
-      var IP = 0;                               // 当前人口数量
-      var IPC = new Decimal(10);                // 增加人口所需科技点数
-      var IQ = 1;                               // 当前人口智商
-      var IQC = new Decimal(100);               // 增加人口智商所需科技点数
-      var DIPC = 3;                             // 获得文明数据所需文明等级
-      var DIP1 = new Decimal(0);                // 当前文明数据数量
-      var priceReduction = 1;                   // 价格降低倍数
-      var research1Purchased = false;           // 研究1是否已购买
-      var research2Purchased = false;           // 研究2是否已购买
-      var research3Cost = new Decimal(500000);  // 研究3当前价格
-      var research4Purchased = false;           // 研究4（一键最大/10价格）是否已购买
-      var labUnlocked = false;                  // 研究室是否已解锁
-      var simulationValue = new Decimal(0);     // 文明模拟值
-      var isSimulating = false;                 // 是否正在模拟
-      var simulationTarget = new Decimal(0);    // 模拟目标值
-      var simulationProgress = 0;               // 模拟进度（毫秒）
-      var initialDIP = new Decimal(0);          // 模拟开始时的文明数据
-      var consumePerMs = new Decimal(0);        // 每毫秒消耗的文明数据（固定值）
+      var sat = new Decimal(0);
+      var CLever = 0;
+      var IP = 0;
+      var IPC = new Decimal(10);
+      var IQ = 1;
+      var IQC = new Decimal(100);
+      var DIPC = 3;
+      var DIP1 = new Decimal(0);
+      var priceReduction = 1;
+      var research1Purchased = false;
+      var research2Purchased = false;
+      var research3Cost = new Decimal(500000);
+      var research4Purchased = false;
+      var labUnlocked = false;
+      var simulationValue = new Decimal(0);
+      var isSimulating = false;
+      var simulationTarget = new Decimal(0);
+      var simulationProgress = 0;
+      var initialDIP = new Decimal(0);
+      var consumePerMs = new Decimal(0);
 
-      // ===== 符文系统变量 =====
-      var rune1Count = new Decimal(0);          // 符文1数量
-      var rune2Count = new Decimal(0);          // 符文2数量
-      var rune3Count = new Decimal(0);          // 符文3数量
-      var rune4Count = new Decimal(0);          // 符文4数量
-      var rune5Count = new Decimal(0);          // 符文5数量
-      var runeBatch = new Decimal(1);           // 符文批量
-      var runeSpeed = 1.0;                      // 符文速度（Number，表示秒数）
-      var runeLuck = new Decimal(1);            // 符文运气
-      var runeUnlocked = false;                 // 符文界面是否已解锁
-      var runeTimerAccum = 0;                   // 符文计时累积（毫秒）
+      var calcPower = new Decimal(0);
+      var calcPowerRate = new Decimal(0);
+      var calcUnlocked = false;
+      var calcPowerActive = false;
 
-      // 初始化按钮状态
+      var autoBuyIPPurchased = false;
+      var autoBuyIQPurchased = false;
+
+      var geneMutationLevel = 0;
+      var geneMutationCost = new Decimal(1000);
+      var betterPopLevel = 0;
+      var betterPopCost = new Decimal(15000);
+
+      var rune1Count = new Decimal(0);
+      var rune2Count = new Decimal(0);
+      var rune3Count = new Decimal(0);
+      var rune4Count = new Decimal(0);
+      var rune5Count = new Decimal(0);
+      var runeBatch = new Decimal(1);
+      var runeSpeed = 1.0;
+      var runeLuck = new Decimal(1);
+      var runeUnlocked = false;
+      var runeTimerAccum = 0;
+
       document.getElementById("maxIPBtn").style.display = "none";
       document.getElementById("maxIQBtn").style.display = "none";
       document.getElementById("labBtn").style.display = "none";
       document.getElementById("dataBtn").style.display = "none";
       document.getElementById("runeBtn").style.display = "none";
+      document.getElementById("calcBtn").style.display = "none";
 
       setInterval(addOne, 10);
       setInterval(autoSave, 15000);
@@ -369,6 +404,8 @@
       setInterval(updateSimulation, 10);
       setInterval(updateRuneSystem, 10);
       setInterval(checkRuneUnlock, 100);
+      setInterval(checkCalcUnlock, 100);
+      setInterval(addCalcPower, 1000);
       
       function formatBonus(num) {
           if (num.eq(0)) return "0";
@@ -389,7 +426,6 @@
           return num.toExponential(2);
       }
 
-      // ===== 符文加成函数 =====
       function getRuneBatchBonus() {
           if (simulationValue.lte(1)) return new Decimal(0);
           return new Decimal(Math.floor(simulationValue.log10()));
@@ -407,24 +443,18 @@
           return IQC.div(priceReduction).floor().div(rune3Count.add(1)).floor();
       }
 
-      // 符文4加成：符文批量加成 = √(符文4数量)，向下取整
       function getRune4BatchBonus() {
           return new Decimal(Math.floor(Math.sqrt(rune4Count.toNumber())));
       }
 
-            // 实际符文批量 = 符文4加成 × 符文批量加成
-      // 符文4加成 = 符文4数量（或根号，看你之前怎么定的）
-      // 符文批量加成 = log10(文明模拟值)
       function getActualRuneBatch() {
-          return getRune4BatchBonus().mul(getRuneBatchBonus());
+          return getRune4BatchBonus().add(1).mul(getRuneBatchBonus().add(1));
       }
 
-      // 符文5加成：速度倍率 = 1 + √(符文5数量)，向下取整
       function getRuneSpeedMul() {
           return new Decimal(1).add(Math.floor(Math.sqrt(rune5Count.toNumber())));
       }
 
-      // 实际符文速度 = 基础速度 / 速度倍率，最快 0.01s
       function getActualRuneSpeed() {
           var speed = new Decimal(runeSpeed).div(getRuneSpeedMul());
           if (speed.lt(0.01)) speed = new Decimal(0.01);
@@ -446,7 +476,14 @@
               .mul(iqBonus)
               .mul(techBonus)
               .mul(DIP1.add(1).floor());
-          sat = sat.add(Mp);
+          
+          if (Mp.lte(1)) {
+              Mp = new Decimal(1.0000001);
+          }
+          
+          var techIndex = 1 + geneMutationLevel * 0.01;
+          var gain = Mp.pow(techIndex);
+          sat = sat.add(gain);
           
           if (sat.gt(1000)) {
               CLever = sat.log10() - 3;
@@ -462,7 +499,8 @@
           if (sat.gte(actualCost)) {
               sat = sat.sub(actualCost);
               IPC = IPC.mul(1.2).floor().add(1);
-              IP = IP + 1;
+              var amount = Math.pow(2, betterPopLevel);
+              IP = IP + amount;
               updateDisplay();
           }
       }
@@ -502,6 +540,33 @@
               if (actualIQCost.lt(0)) actualIQCost = new Decimal(0);
           }
           
+          if (autoBuyIPPurchased) {
+              var autoIPCost = IPC.div(priceReduction).floor();
+              var autoAmount = Math.pow(2, betterPopLevel);
+              var autoSafety1 = 0;
+              while (sat.gte(autoIPCost) && autoIPCost.gt(0) && autoSafety1 < 10000) {
+                  autoSafety1++;
+                  sat = sat.sub(autoIPCost);
+                  IPC = IPC.mul(1.2).floor().add(1);
+                  IP = IP + autoAmount;
+                  autoIPCost = IPC.div(priceReduction).floor();
+              }
+          }
+          
+          if (autoBuyIQPurchased) {
+              var autoIQCost = getRune3Bonus();
+              if (autoIQCost.lt(0)) autoIQCost = new Decimal(0);
+              var autoSafety2 = 0;
+              while (sat.gte(autoIQCost) && autoIQCost.gt(0) && autoSafety2 < 10000) {
+                  autoSafety2++;
+                  sat = sat.sub(autoIQCost);
+                  IQC = IQC.mul(3).floor().add(1);
+                  IQ = IQ + 1;
+                  autoIQCost = getRune3Bonus();
+                  if (autoIQCost.lt(0)) autoIQCost = new Decimal(0);
+              }
+          }
+          
           if (actualIPCost.lt(1) || actualIQCost.lt(1)) {
               updateDisplay();
           }
@@ -510,12 +575,13 @@
       function buyMaxIP() {
           if (!research1Purchased) return;
           var actualCost = IPC.div(priceReduction).floor();
+          var amount = Math.pow(2, betterPopLevel);
           var safety = 0;
           while (sat.gte(actualCost) && actualCost.gt(0) && safety < 10000) {
               safety++;
               sat = sat.sub(actualCost);
               IPC = IPC.mul(1.2).floor().add(1);
-              IP = IP + 1;
+              IP = IP + amount;
               actualCost = IPC.div(priceReduction).floor();
           }
           updateDisplay();
@@ -573,6 +639,131 @@
               
               updateDisplay();
           }
+      }
+
+      function checkCalcUnlock() {
+          if (!calcUnlocked && sat.gt(new Decimal("1e300"))) {
+              calcUnlocked = true;
+              document.getElementById("calcBtn").style.display = "inline-block";
+          }
+      }
+      
+      function addCalcPower() {
+          if (calcPowerActive) {
+              calcPower = calcPower.add(calcPowerRate);
+              updateDisplay();
+              if (document.getElementById("calcModal").style.display === "block") {
+                  updateCalcDisplay();
+              }
+          }
+      }
+      
+      function buyCalcPower() {
+          if (!calcUnlocked) return;
+          
+          var rate = new Decimal(0);
+          if (sat.gt(0)) {
+              rate = new Decimal(sat.log10() / Math.log10(2));
+          }
+          
+          if (rate.lte(0)) return;
+          
+          calcPowerRate = rate;
+          calcPowerActive = true;
+          
+          sat = new Decimal(0);
+          CLever = 0;
+          IP = 0;
+          IPC = new Decimal(10);
+          IQ = 1;
+          IQC = new Decimal(100);
+          DIPC = 3;
+          DIP1 = new Decimal(0);
+          priceReduction = 1;
+          research1Purchased = false;
+          research2Purchased = false;
+          research3Cost = new Decimal(500000);
+          research4Purchased = false;
+          labUnlocked = false;
+          simulationValue = new Decimal(0);
+          isSimulating = false;
+          simulationTarget = new Decimal(0);
+          simulationProgress = 0;
+          initialDIP = new Decimal(0);
+          consumePerMs = new Decimal(0);
+          rune1Count = new Decimal(0);
+          rune2Count = new Decimal(0);
+          rune3Count = new Decimal(0);
+          rune4Count = new Decimal(0);
+          rune5Count = new Decimal(0);
+          runeBatch = new Decimal(1);
+          runeSpeed = 1.0;
+          runeLuck = new Decimal(1);
+          runeUnlocked = false;
+          runeTimerAccum = 0;
+          
+          document.getElementById("maxIPBtn").style.display = "none";
+          document.getElementById("maxIQBtn").style.display = "none";
+          document.getElementById("labBtn").style.display = "none";
+          document.getElementById("dataBtn").style.display = "none";
+          document.getElementById("runeBtn").style.display = "none";
+          document.getElementById("maxResearch3Btn").style.display = "none";
+          
+          document.getElementById("labModal").style.display = "none";
+          document.getElementById("dataCenterModal").style.display = "none";
+          document.getElementById("runeModal").style.display = "none";
+          
+          updateDisplay();
+          updateCalcDisplay();
+      }
+      
+      function buyGeneMutation() {
+          if (calcPower.gte(geneMutationCost)) {
+              calcPower = calcPower.sub(geneMutationCost);
+              geneMutationLevel += 1;
+              geneMutationCost = geneMutationCost.mul(4).floor();
+              updateCalcDisplay();
+              updateDisplay();
+          }
+      }
+      
+      function buyBetterPop() {
+          if (calcPower.gte(betterPopCost)) {
+              calcPower = calcPower.sub(betterPopCost);
+              betterPopLevel += 1;
+              betterPopCost = betterPopCost.mul(2.5).floor();
+              updateCalcDisplay();
+              updateDisplay();
+          }
+      }
+      
+      function openCalc() {
+          if (!calcUnlocked) return;
+          document.getElementById("calcModal").style.display = "block";
+          updateCalcDisplay();
+      }
+      
+      function closeCalc() {
+          document.getElementById("calcModal").style.display = "none";
+      }
+      
+      function updateCalcDisplay() {
+          var rate = new Decimal(0);
+          if (sat.gt(0)) {
+              rate = new Decimal(sat.log10() / Math.log10(2));
+          }
+          if (rate.lte(0)) rate = new Decimal(0);
+          document.getElementById("calcRateText").textContent = formatNumber(rate);
+          
+          document.getElementById("calcPowerDisplay").textContent = formatNumber(calcPower);
+          
+          document.getElementById("geneMutationCost").textContent = formatNumber(geneMutationCost);
+          document.getElementById("geneMutationLevel").textContent = geneMutationLevel;
+          document.getElementById("geneMutationBonus").textContent = (geneMutationLevel * 0.01).toFixed(2);
+          
+          document.getElementById("betterPopCost").textContent = formatNumber(betterPopCost);
+          document.getElementById("betterPopLevel").textContent = betterPopLevel;
+          document.getElementById("betterPopBonus").textContent = Math.pow(2, betterPopLevel);
       }
 
       function openUpdate() {
@@ -696,6 +887,33 @@
           } else {
               r4Btn.textContent = "解锁一键购买最大/10价格（需要100000000000文明数据）";
           }
+          
+          var autoIPBtn = document.getElementById("autoBuyIPBtn");
+          var autoIQBtn = document.getElementById("autoBuyIQBtn");
+          
+          if (calcPower.gt(1)) {
+              autoIPBtn.style.display = "inline-block";
+              autoIQBtn.style.display = "inline-block";
+          } else {
+              autoIPBtn.style.display = "none";
+              autoIQBtn.style.display = "none";
+          }
+          
+          if (autoBuyIPPurchased) {
+              autoIPBtn.disabled = true;
+              autoIPBtn.textContent = "已解锁自动购买最大人口";
+          } else {
+              autoIPBtn.disabled = false;
+              autoIPBtn.textContent = "自动购买最大人口（需要5000算力）";
+          }
+          
+          if (autoBuyIQPurchased) {
+              autoIQBtn.disabled = true;
+              autoIQBtn.textContent = "已解锁自动购买最大人口智商";
+          } else {
+              autoIQBtn.disabled = false;
+              autoIQBtn.textContent = "自动购买最大人口智商（需要10000算力）";
+          }
       }
       
       function research1() {
@@ -738,7 +956,23 @@
           }
       }
       
-      // ===== 符文系统功能 =====
+      function buyAutoBuyIP() {
+          if (!autoBuyIPPurchased && calcPower.gte(5000)) {
+              calcPower = calcPower.sub(5000);
+              autoBuyIPPurchased = true;
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
+      
+      function buyAutoBuyIQ() {
+          if (!autoBuyIQPurchased && calcPower.gte(10000)) {
+              calcPower = calcPower.sub(10000);
+              autoBuyIQPurchased = true;
+              updateLabDisplay();
+              updateDisplay();
+          }
+      }
       
       function openRune() {
           if (!runeUnlocked) return;
@@ -871,6 +1105,11 @@
           document.getElementById("DIP").textContent = formatNumber(DIP1);
           document.getElementById("DIPC").textContent = DIPC.toString();
           
+          // 人口加成：+当前人口
+          document.getElementById("IPBonusText").textContent = formatNumber(new Decimal(IP));
+          // 智商加成：×（2^当前人口智商）
+          document.getElementById("IQBonusText").textContent = formatNumber(new Decimal(2).pow(IQ));
+          
           var dipBonus = new Decimal(0);
           if (simulationValue.gte(20)) {
               dipBonus = simulationValue.sub(20).sqrt();
@@ -885,6 +1124,7 @@
           document.getElementById("labBtn").style.display = labUnlocked ? "inline-block" : "none";
           document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
           document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
+          document.getElementById("calcBtn").style.display = calcUnlocked ? "inline-block" : "none";
           
           if (document.getElementById("labModal").style.display === "block") {
               updateLabDisplay();
@@ -894,6 +1134,9 @@
           }
           if (document.getElementById("runeModal").style.display === "block") {
               updateRuneDisplay();
+          }
+          if (document.getElementById("calcModal").style.display === "block") {
+              updateCalcDisplay();
           }
       }
       
@@ -928,7 +1171,17 @@
               runeSpeed: runeSpeed,
               runeLuck: runeLuck.toString(),
               runeUnlocked: runeUnlocked,
-              runeTimerAccum: runeTimerAccum
+              runeTimerAccum: runeTimerAccum,
+              calcPower: calcPower.toString(),
+              calcPowerRate: calcPowerRate.toString(),
+              calcUnlocked: calcUnlocked,
+              calcPowerActive: calcPowerActive,
+              autoBuyIPPurchased: autoBuyIPPurchased,
+              autoBuyIQPurchased: autoBuyIQPurchased,
+              geneMutationLevel: geneMutationLevel,
+              geneMutationCost: geneMutationCost.toString(),
+              betterPopLevel: betterPopLevel,
+              betterPopCost: betterPopCost.toString()
           };
           localStorage.setItem('gameSave', JSON.stringify(gameData));
           console.log('游戏已保存');
@@ -987,12 +1240,23 @@
               runeLuck = new Decimal(gameData.runeLuck || 1);
               runeUnlocked = gameData.runeUnlocked || false;
               runeTimerAccum = gameData.runeTimerAccum || 0;
+              calcPower = new Decimal(gameData.calcPower || 0);
+              calcPowerRate = new Decimal(gameData.calcPowerRate || 0);
+              calcUnlocked = gameData.calcUnlocked || false;
+              calcPowerActive = gameData.calcPowerActive || false;
+              autoBuyIPPurchased = gameData.autoBuyIPPurchased || false;
+              autoBuyIQPurchased = gameData.autoBuyIQPurchased || false;
+              geneMutationLevel = gameData.geneMutationLevel || 0;
+              geneMutationCost = new Decimal(gameData.geneMutationCost || 1000);
+              betterPopLevel = gameData.betterPopLevel || 0;
+              betterPopCost = new Decimal(gameData.betterPopCost || 15000);
               
               document.getElementById("maxIPBtn").style.display = research1Purchased ? "inline-block" : "none";
               document.getElementById("maxIQBtn").style.display = research2Purchased ? "inline-block" : "none";
               document.getElementById("labBtn").style.display = labUnlocked ? "inline-block" : "none";
               document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
               document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
+              document.getElementById("calcBtn").style.display = calcUnlocked ? "inline-block" : "none";
               document.getElementById("maxResearch3Btn").style.display = research4Purchased ? "inline-block" : "none";
               
               updateDisplay();
@@ -1034,13 +1298,26 @@
               runeLuck = new Decimal(1);
               runeUnlocked = false;
               runeTimerAccum = 0;
+              calcPower = new Decimal(0);
+              calcPowerRate = new Decimal(0);
+              calcUnlocked = false;
+              calcPowerActive = false;
+              autoBuyIPPurchased = false;
+              autoBuyIQPurchased = false;
+              geneMutationLevel = 0;
+              geneMutationCost = new Decimal(1000);
+              betterPopLevel = 0;
+              betterPopCost = new Decimal(15000);
               
               document.getElementById("maxIPBtn").style.display = "none";
               document.getElementById("maxIQBtn").style.display = "none";
               document.getElementById("labBtn").style.display = "none";
               document.getElementById("dataBtn").style.display = "none";
               document.getElementById("runeBtn").style.display = "none";
+              document.getElementById("calcBtn").style.display = "none";
               document.getElementById("maxResearch3Btn").style.display = "none";
+              document.getElementById("autoBuyIPBtn").style.display = "none";
+              document.getElementById("autoBuyIQBtn").style.display = "none";
               
               localStorage.removeItem('gameSave');
               updateDisplay();
@@ -1056,6 +1333,9 @@
           }
           if (event.target == document.getElementById("updateModal")) {
               closeUpdate();
+          }
+          if (event.target == document.getElementById("calcModal")) {
+              closeCalc();
           }
       }
       
