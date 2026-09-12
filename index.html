@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>technology incremental</title>
+    <title>1</title>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2.2.0/dist/break_infinity.min.js"></script>
     <style>
         /* 原有弹窗样式 */
@@ -14,6 +14,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
         }
         .modal-content {
             background-color: white;
@@ -137,13 +138,43 @@
             margin-top: 30px;
             padding: 0 40px;
         }
+        
+        /* 符文小方框 */
+        .rune-small-layout {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 0 40px;
+        }
+        .panel-small {
+            background-color: white;
+            border: 1px solid #888;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 0 auto;
+            min-width: 120px;
+        }
+        .panel-small .panel-title {
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .panel-small .panel-row {
+            font-size: 14px;
+            margin: 5px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
    
-      <p style="font-size: 12px;">科技增量v0.11</p>
+      <p style="font-size: 12px;">科技增量v0.15</p>
    <button style="font-size: 14px; padding: 3px 10px; cursor: pointer;" onclick="openUpdate()">更新日志</button>
+   <p>作者qq:3923423995</p>
 
    <div style="text-align: center;">
       <button style="font-size: 30px;" onclick="buyDIP()">获得<span id="DIPC1">0</span>文明数据(需要<span id="DIPC">3</span>文明等级)</button>
@@ -177,14 +208,18 @@
       <button style="font-size: 20px;" onclick="resetGame()">重置游戏</button>
    </div>
 
-      <!-- 更新弹窗 -->
+   <!-- 更新弹窗 -->
    <div id="updateModal" class="modal">
        <div class="modal-content">
            <span class="close" onclick="closeUpdate()">&times;</span>
            <h2 style="text-align: center;">更新日志</h2>
            <div style="text-align: left; font-size: 16px; height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
-               <p><b>v0.11</b></p>
-               <p>更新了更新界面，可以查看往后的更新</p>
+               <p><b>v0.15</b><p>
+               <p>取消了符文库存</p>
+               <p>更改了数据中心里符文批量加成的计算方式</p>
+               <p>新增了符文4和符文5</p>
+               <p><b>v0.1</b></p>
+               <p>初始版本发布</p>
            </div>
        </div>
    </div>
@@ -230,9 +265,6 @@
    <div id="runeModal" class="fullscreen-modal">
        <span class="fullscreen-close" onclick="closeRune()">&times;</span>
        <h1 style="text-align: center; margin-top: 30px;">符文</h1>
-       <div style="text-align: center; margin-top: 15px;">
-           <button class="data-action-btn" onclick="openRuneInv()">符文库存</button>
-       </div>
        
        <div class="rune-layout">
            <!-- 左边方框：符文属性 -->
@@ -241,6 +273,7 @@
                <div class="panel-row">RPS：<span id="runeRPS">0</span></div>
                <div class="panel-row">符文批量：<span id="runeBatch">1</span></div>
                <div class="panel-row">符文速度：<span id="runeSpeed">1.00s</span></div>
+               <div class="panel-row">符文速度倍率：<span id="runeSpeedMul">1x</span></div>
                <div class="panel-row">符文运气：<span id="runeLuck">1.00</span></div>
            </div>
            
@@ -250,30 +283,37 @@
                <div class="panel-row">符文1概率：<span id="rune1Prob">1/2</span></div>
                <div class="panel-row">符文2概率：<span id="rune2Prob">1/10</span></div>
                <div class="panel-row">符文3概率：<span id="rune3Prob">1/100</span></div>
+               <div class="panel-row">符文4概率：<span id="rune4Prob">1/200</span></div>
+               <div class="panel-row">符文5概率：<span id="rune5Prob">1/500</span></div>
            </div>
        </div>
-   </div>
-
-   <!-- 符文库存全屏界面 -->
-   <div id="runeInvModal" class="fullscreen-modal">
-       <span class="fullscreen-close" onclick="closeRuneInv()">&times;</span>
-       <h1 style="text-align: center; margin-top: 30px;">符文库存</h1>
        
-       <div class="rune-layout">
-           <div class="panel">
+       <!-- 下方方框：符文数量与加成（小尺寸） -->
+       <div class="rune-small-layout">
+           <div class="panel-small">
                <div class="panel-title">符文1</div>
                <div class="panel-row">数量：<span id="rune1Count">0</span></div>
                <div class="panel-row">文明数据加成：<span id="rune1BonusText">1*</span></div>
            </div>
-           <div class="panel">
+           <div class="panel-small">
                <div class="panel-title">符文2</div>
                <div class="panel-row">数量：<span id="rune2Count">0</span></div>
                <div class="panel-row">文明模拟值加成：<span id="rune2BonusText">1*</span></div>
            </div>
-           <div class="panel">
+           <div class="panel-small">
                <div class="panel-title">符文3</div>
                <div class="panel-row">数量：<span id="rune3Count">0</span></div>
                <div class="panel-row">当前智商价格：<span id="rune3BonusText">/1</span></div>
+           </div>
+           <div class="panel-small">
+               <div class="panel-title">符文4</div>
+               <div class="panel-row">数量：<span id="rune4Count">0</span></div>
+               <div class="panel-row">符文批量加成：<span id="rune4BonusText">+0</span></div>
+           </div>
+           <div class="panel-small">
+               <div class="panel-title">符文5</div>
+               <div class="panel-row">数量：<span id="rune5Count">0</span></div>
+               <div class="panel-row">速度倍率加成：<span id="rune5BonusText">+0</span></div>
            </div>
        </div>
    </div>
@@ -305,9 +345,11 @@
       var rune1Count = new Decimal(0);          // 符文1数量
       var rune2Count = new Decimal(0);          // 符文2数量
       var rune3Count = new Decimal(0);          // 符文3数量
-      var runeBatch = 1;                        // 符文批量
-      var runeSpeed = 1.0;                      // 符文速度
-      var runeLuck = 1.0;                       // 符文运气
+      var rune4Count = new Decimal(0);          // 符文4数量
+      var rune5Count = new Decimal(0);          // 符文5数量
+      var runeBatch = new Decimal(1);           // 符文批量
+      var runeSpeed = 1.0;                      // 符文速度（Number，表示秒数）
+      var runeLuck = new Decimal(1);            // 符文运气
       var runeUnlocked = false;                 // 符文界面是否已解锁
       var runeTimerAccum = 0;                   // 符文计时累积（毫秒）
 
@@ -346,8 +388,8 @@
 
       // ===== 符文加成函数 =====
       function getRuneBatchBonus() {
-          if (simulationValue.lte(1)) return 0;
-          return Math.floor(simulationValue.log10());
+          if (simulationValue.lte(1)) return new Decimal(0);
+          return new Decimal(Math.floor(simulationValue.log10()));
       }
 
       function getRune1Bonus() {
@@ -360,6 +402,28 @@
 
       function getRune3Bonus() {
           return IQC.div(priceReduction).floor().div(rune3Count.add(1)).floor();
+      }
+
+      // 符文4加成：符文批量加成 = √(符文4数量)，向下取整
+      function getRune4BatchBonus() {
+          return new Decimal(Math.floor(Math.sqrt(rune4Count.toNumber())));
+      }
+
+      // 实际符文批量 = (基础批量 + 模拟值批量加成) × (1 + 符文4加成)
+      function getActualRuneBatch() {
+          return runeBatch.add(getRuneBatchBonus()).mul(getRune4BatchBonus().add(1));
+      }
+
+      // 符文5加成：速度倍率 = 1 + √(符文5数量)，向下取整
+      function getRuneSpeedMul() {
+          return new Decimal(1).add(Math.floor(Math.sqrt(rune5Count.toNumber())));
+      }
+
+      // 实际符文速度 = 基础速度 / 速度倍率，最快 0.01s
+      function getActualRuneSpeed() {
+          var speed = new Decimal(runeSpeed).div(getRuneSpeedMul());
+          if (speed.lt(0.01)) speed = new Decimal(0.01);
+          return speed;
       }
 
       function addOne() {
@@ -557,7 +621,7 @@
           var runeBatchBonusLine = document.getElementById("runeBatchBonusLine");
           if (runeUnlocked) {
               runeBatchBonusLine.style.display = "block";
-              document.getElementById("runeBatchBonus").textContent = getRuneBatchBonus();
+              document.getElementById("runeBatchBonus").textContent = "x" + formatNumber(getRune4BatchBonus().add(1));
           } else {
               runeBatchBonusLine.style.display = "none";
           }
@@ -681,32 +745,24 @@
           document.getElementById("runeModal").style.display = "none";
       }
       
-      function openRuneInv() {
-          if (!runeUnlocked) return;
-          document.getElementById("runeModal").style.display = "none";
-          document.getElementById("runeInvModal").style.display = "block";
-          updateRuneDisplay();
-      }
-      
-      function closeRuneInv() {
-          document.getElementById("runeInvModal").style.display = "none";
-          document.getElementById("runeModal").style.display = "block";
-          updateRuneDisplay();
-      }
-      
       function getRPS() {
-          var actualBatch = runeBatch + getRuneBatchBonus();
-          return actualBatch * (1 / runeSpeed);
+          return getActualRuneBatch().mul(new Decimal(1).div(getActualRuneSpeed()));
       }
       
       function getRune1Denom() {
-          return Math.max(2 / runeLuck, 1);
+          return Math.max(new Decimal(2).div(runeLuck).toNumber(), 1);
       }
       function getRune2Denom() {
-          return Math.max(10 / runeLuck, 1);
+          return Math.max(new Decimal(10).div(runeLuck).toNumber(), 1);
       }
       function getRune3Denom() {
-          return Math.max(100 / runeLuck, 1);
+          return Math.max(new Decimal(100).div(runeLuck).toNumber(), 1);
+      }
+      function getRune4Denom() {
+          return Math.max(new Decimal(200).div(runeLuck).toNumber(), 1);
+      }
+      function getRune5Denom() {
+          return Math.max(new Decimal(500).div(runeLuck).toNumber(), 1);
       }
       
       function formatProb(denom) {
@@ -715,22 +771,29 @@
       }
       
       function updateRuneDisplay() {
-          document.getElementById("runeRPS").textContent = getRPS().toFixed(2);
-          document.getElementById("runeBatch").textContent = runeBatch + getRuneBatchBonus();
-          document.getElementById("runeSpeed").textContent = runeSpeed.toFixed(2) + "s";
-          document.getElementById("runeLuck").textContent = runeLuck.toFixed(2);
+          document.getElementById("runeRPS").textContent = formatNumber(getRPS());
+          document.getElementById("runeBatch").textContent = formatNumber(getActualRuneBatch());
+          document.getElementById("runeSpeed").textContent = getActualRuneSpeed().toNumber().toFixed(2) + "s";
+          document.getElementById("runeSpeedMul").textContent = formatNumber(getRuneSpeedMul()) + "x";
+          document.getElementById("runeLuck").textContent = formatNumber(runeLuck);
           
           document.getElementById("rune1Prob").textContent = formatProb(getRune1Denom());
           document.getElementById("rune2Prob").textContent = formatProb(getRune2Denom());
           document.getElementById("rune3Prob").textContent = formatProb(getRune3Denom());
+          document.getElementById("rune4Prob").textContent = formatProb(getRune4Denom());
+          document.getElementById("rune5Prob").textContent = formatProb(getRune5Denom());
           
           document.getElementById("rune1Count").textContent = formatNumber(rune1Count);
           document.getElementById("rune2Count").textContent = formatNumber(rune2Count);
           document.getElementById("rune3Count").textContent = formatNumber(rune3Count);
+          document.getElementById("rune4Count").textContent = formatNumber(rune4Count);
+          document.getElementById("rune5Count").textContent = formatNumber(rune5Count);
           
           document.getElementById("rune1BonusText").textContent = formatNumber(getRune1Bonus()) + "*";
           document.getElementById("rune2BonusText").textContent = formatNumber(getRune2Bonus()) + "*";
           document.getElementById("rune3BonusText").textContent = "/" + formatNumber(rune3Count.add(1));
+          document.getElementById("rune4BonusText").textContent = "+" + Math.floor(Math.sqrt(rune4Count.toNumber()));
+          document.getElementById("rune5BonusText").textContent = "+" + Math.floor(Math.sqrt(rune5Count.toNumber()));
       }
       
       function rollRune() {
@@ -739,12 +802,24 @@
           var d1 = getRune1Denom();
           var d2 = getRune2Denom();
           var d3 = getRune3Denom();
+          var d4 = getRune4Denom();
+          var d5 = getRune5Denom();
           
-          if (r < 1 / d3) {
+          var p5 = 1 / d5;
+          var p4 = p5 + 1 / d4;
+          var p3 = p4 + 1 / d3;
+          var p2 = p3 + 1 / d2;
+          var p1 = p2 + 1 / d1;
+          
+          if (r < p5) {
+              return 5;
+          } else if (r < p4) {
+              return 4;
+          } else if (r < p3) {
               return 3;
-          } else if (r < 1 / d3 + 1 / d2) {
+          } else if (r < p2) {
               return 2;
-          } else if (r < 1 / d3 + 1 / d2 + 1 / d1) {
+          } else if (r < p1) {
               return 1;
           }
           return 0;
@@ -755,8 +830,8 @@
           
           runeTimerAccum += 10;
           
-          var intervalMs = runeSpeed * 1000;
-          var actualBatch = runeBatch + getRuneBatchBonus();
+          var intervalMs = getActualRuneSpeed().toNumber() * 1000;
+          var actualBatch = getActualRuneBatch().toNumber();
           
           while (runeTimerAccum >= intervalMs) {
               runeTimerAccum -= intervalMs;
@@ -769,12 +844,15 @@
                       rune2Count = rune2Count.add(1);
                   } else if (type === 3) {
                       rune3Count = rune3Count.add(1);
+                  } else if (type === 4) {
+                      rune4Count = rune4Count.add(1);
+                  } else if (type === 5) {
+                      rune5Count = rune5Count.add(1);
                   }
               }
           }
           
-          if (document.getElementById("runeModal").style.display === "block" ||
-              document.getElementById("runeInvModal").style.display === "block") {
+          if (document.getElementById("runeModal").style.display === "block") {
               updateRuneDisplay();
           }
       }
@@ -809,8 +887,7 @@
           if (document.getElementById("dataCenterModal").style.display === "block") {
               updateDataCenterDisplay();
           }
-          if (document.getElementById("runeModal").style.display === "block" ||
-              document.getElementById("runeInvModal").style.display === "block") {
+          if (document.getElementById("runeModal").style.display === "block") {
               updateRuneDisplay();
           }
       }
@@ -840,9 +917,11 @@
               rune1Count: rune1Count.toString(),
               rune2Count: rune2Count.toString(),
               rune3Count: rune3Count.toString(),
-              runeBatch: runeBatch,
+              rune4Count: rune4Count.toString(),
+              rune5Count: rune5Count.toString(),
+              runeBatch: runeBatch.toString(),
               runeSpeed: runeSpeed,
-              runeLuck: runeLuck,
+              runeLuck: runeLuck.toString(),
               runeUnlocked: runeUnlocked,
               runeTimerAccum: runeTimerAccum
           };
@@ -896,9 +975,11 @@
               rune1Count = new Decimal(gameData.rune1Count || 0);
               rune2Count = new Decimal(gameData.rune2Count || 0);
               rune3Count = new Decimal(gameData.rune3Count || 0);
-              runeBatch = gameData.runeBatch || 1;
+              rune4Count = new Decimal(gameData.rune4Count || 0);
+              rune5Count = new Decimal(gameData.rune5Count || 0);
+              runeBatch = new Decimal(gameData.runeBatch || 1);
               runeSpeed = gameData.runeSpeed || 1.0;
-              runeLuck = gameData.runeLuck || 1.0;
+              runeLuck = new Decimal(gameData.runeLuck || 1);
               runeUnlocked = gameData.runeUnlocked || false;
               runeTimerAccum = gameData.runeTimerAccum || 0;
               
@@ -941,9 +1022,11 @@
               rune1Count = new Decimal(0);
               rune2Count = new Decimal(0);
               rune3Count = new Decimal(0);
-              runeBatch = 1;
+              rune4Count = new Decimal(0);
+              rune5Count = new Decimal(0);
+              runeBatch = new Decimal(1);
               runeSpeed = 1.0;
-              runeLuck = 1.0;
+              runeLuck = new Decimal(1);
               runeUnlocked = false;
               runeTimerAccum = 0;
               
