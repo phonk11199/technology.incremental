@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>technology incremental</title>
+    <title>1</title>
     <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2.2.0/dist/break_infinity.min.js"></script>
     <style>
         /* 原有弹窗样式 */
@@ -17,7 +17,7 @@
         }
         .modal-content {
             background-color: white;
-            margin: 15% auto;
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
@@ -142,7 +142,8 @@
 <body>
 
    
-   <p style="font-size: 12px;">科技增量v0.1</p>
+      <p style="font-size: 12px;">科技增量v0.11</p>
+   <button style="font-size: 14px; padding: 3px 10px; cursor: pointer;" onclick="openUpdate()">更新</button>
 
    <div style="text-align: center;">
       <button style="font-size: 30px;" onclick="buyDIP()">获得<span id="DIPC1">0</span>文明数据(需要<span id="DIPC">3</span>文明等级)</button>
@@ -174,6 +175,18 @@
       <button style="font-size: 20px;" onclick="saveGame()">保存游戏</button>
       <button style="font-size: 20px;" onclick="loadGame()">读取存档</button>
       <button style="font-size: 20px;" onclick="resetGame()">重置游戏</button>
+   </div>
+
+      <!-- 更新弹窗 -->
+   <div id="updateModal" class="modal">
+       <div class="modal-content">
+           <span class="close" onclick="closeUpdate()">&times;</span>
+           <h2 style="text-align: center;">更新日志</h2>
+           <div style="text-align: left; font-size: 16px; height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+               <p><b>v0.11</b></p>
+               <p>更新了更新界面，可以查看往后的更新</p>
+           </div>
+       </div>
    </div>
 
    <!-- 研究室弹窗 -->
@@ -491,6 +504,14 @@
               
               updateDisplay();
           }
+      }
+
+      function openUpdate() {
+          document.getElementById("updateModal").style.display = "block";
+      }
+      
+      function closeUpdate() {
+          document.getElementById("updateModal").style.display = "none";
       }
       
       function openLab() {
@@ -944,6 +965,9 @@
           }
           if (event.target == document.getElementById("dataCenterModal")) {
               closeDataCenter();
+          }
+          if (event.target == document.getElementById("updateModal")) {
+              closeUpdate();
           }
       }
       
