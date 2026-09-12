@@ -409,9 +409,11 @@
           return new Decimal(Math.floor(Math.sqrt(rune4Count.toNumber())));
       }
 
-      // 实际符文批量 = (基础批量 + 模拟值批量加成) × (1 + 符文4加成)
+            // 实际符文批量 = 符文4加成 × 符文批量加成
+      // 符文4加成 = 符文4数量（或根号，看你之前怎么定的）
+      // 符文批量加成 = log10(文明模拟值)
       function getActualRuneBatch() {
-          return runeBatch.add(getRuneBatchBonus()).mul(getRune4BatchBonus().add(1));
+          return getRune4BatchBonus().mul(getRuneBatchBonus());
       }
 
       // 符文5加成：速度倍率 = 1 + √(符文5数量)，向下取整
@@ -621,7 +623,7 @@
           var runeBatchBonusLine = document.getElementById("runeBatchBonusLine");
           if (runeUnlocked) {
               runeBatchBonusLine.style.display = "block";
-              document.getElementById("runeBatchBonus").textContent = "x" + formatNumber(getRune4BatchBonus().add(1));
+              document.getElementById("runeBatchBonus").textContent = "*" + formatNumber(getRuneBatchBonus());
           } else {
               runeBatchBonusLine.style.display = "none";
           }
@@ -792,7 +794,7 @@
           document.getElementById("rune1BonusText").textContent = formatNumber(getRune1Bonus()) + "*";
           document.getElementById("rune2BonusText").textContent = formatNumber(getRune2Bonus()) + "*";
           document.getElementById("rune3BonusText").textContent = "/" + formatNumber(rune3Count.add(1));
-          document.getElementById("rune4BonusText").textContent = "+" + Math.floor(Math.sqrt(rune4Count.toNumber()));
+          document.getElementById("rune4BonusText").textContent = "*" + Math.floor(Math.sqrt(rune4Count.toNumber()));
           document.getElementById("rune5BonusText").textContent = "+" + Math.floor(Math.sqrt(rune5Count.toNumber()));
       }
       
