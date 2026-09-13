@@ -69,6 +69,11 @@
             display: none;
             margin-left: 10px;
         }
+        .planet-btn {
+            font-size: 30px;
+            display: none;
+            margin-left: 10px;
+        }
         .data-action-btn {
             font-size: 20px;
             margin: 10px;
@@ -160,7 +165,7 @@
 <body>
 
    
-      <p style="font-size: 12px;">科技增量v0.21</p>
+      <p style="font-size: 12px;">科技增量v0.22</p>
    <button style="font-size: 14px; padding: 3px 10px; cursor: pointer;" onclick="openUpdate()">更新日志</button>
    <p>作者qq:3923423995</p>
 
@@ -177,19 +182,20 @@
       <button style="font-size: 30px;" onclick="buyIP()">增加人口(需要<span id="IPcost">10</span>点科技点数)</button>
       <button id="maxIPBtn" class="max-btn" onclick="buyMaxIP()">一键最大</button>
       <span style="font-size: 30px;">人口:<span id="IPcount">0</span></span>
-      <p style="font-size: 20px;">效果:+<span id="IPBonusText">0</span></p>
+      <p style="font-size: 20px;">加成：+<span id="IPBonusText">0</span></p>
    </div>
    <div style="text-align: center;">
       <button style="font-size: 30px;" onclick="buyIQ()">增加人口智商(需要<span id="IQcost">100</span>点科技点数)</button>
       <button id="maxIQBtn" class="max-btn" onclick="buyMaxIQ()">一键最大</button>
       <span style="font-size: 30px;">人口智商:<span id="IQcount">1</span></span>
-      <p style="font-size: 20px;">效果:×<span id="IQBonusText">2</span></p>
+      <p style="font-size: 20px;">加成：×<span id="IQBonusText">2</span></p>
    </div>
    <div style="text-align: center;">
       <button id="labBtn" class="lab-btn" onclick="openLab()">研究室</button>
       <button id="dataBtn" class="data-btn" onclick="openDataCenter()">数据中心</button>
       <button id="runeBtn" class="rune-btn" onclick="openRune()">符文</button>
       <button id="calcBtn" class="calc-btn" onclick="openCalc()">计算机</button>
+      <button id="planetBtn" class="planet-btn" onclick="openPlanet()">星球</button>
    </div>
 
    
@@ -205,10 +211,14 @@
            <span class="close" onclick="closeUpdate()">&times;</span>
            <h2 style="text-align: center;">更新日志</h2>
            <div style="text-align: left; font-size: 16px; height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px;">
+               <p><b>v0.23</b></p>
+               <p>新增了星球加成</p>
+               <p><b>v0.22</b></p>
+               <p>新增了星球</p>
                <p><b>v0.21</b></p>
                <p>新增了人口基因突变</p>
                <p>新增了更好的人口</p>
-               <p>科技增加量改为 (所有科技加成)^科技指数</p>
+               <p>更改了科技的计算公式</p>
                <p>主界面显示人口和智商加成</p>
                <p><b>v0.2</b></p>
                <p>新增了计算机界面</p>
@@ -344,6 +354,23 @@
        </div>
    </div>
 
+   <!-- 星球全屏界面 -->
+   <div id="planetModal" class="fullscreen-modal">
+       <span class="fullscreen-close" onclick="closePlanet()">&times;</span>
+       <h1 style="text-align: center; margin-top: 30px;">星球</h1>
+       
+       <div style="display: flex; justify-content: center; align-items: center; margin-top: 80px; gap: 60px;">
+           <p style="font-size: 32px;">星球[<span id="planetCurrent">0</span>]</p>
+           <p style="font-size: 28px;">到达下一个星球还需要 <span id="planetTime">10.0</span> 秒</p>
+           <p style="font-size: 32px;">星球[<span id="planetNext">1</span>]</p>
+       </div>
+       
+       <div style="text-align: center; margin-top: 60px;">
+           <p style="font-size: 24px;">科技加成：×<span id="planetTechBonus">1</span></p>
+           <p style="font-size: 24px;">算力加成：×<span id="planetCalcBonus">0</span></p>
+       </div>
+   </div>
+
    
    <script>
       var sat = new Decimal(0);
@@ -380,6 +407,11 @@
       var betterPopLevel = 0;
       var betterPopCost = new Decimal(15000);
 
+      var planetUnlocked = false;
+      var planetCurrent = 0;
+      var planetTimeNeeded = 10;
+      var planetTimer = 0;
+
       var rune1Count = new Decimal(0);
       var rune2Count = new Decimal(0);
       var rune3Count = new Decimal(0);
@@ -397,6 +429,7 @@
       document.getElementById("dataBtn").style.display = "none";
       document.getElementById("runeBtn").style.display = "none";
       document.getElementById("calcBtn").style.display = "none";
+      document.getElementById("planetBtn").style.display = "none";
 
       setInterval(addOne, 10);
       setInterval(autoSave, 15000);
@@ -405,7 +438,9 @@
       setInterval(updateRuneSystem, 10);
       setInterval(checkRuneUnlock, 100);
       setInterval(checkCalcUnlock, 100);
+      setInterval(checkPlanetUnlock, 100);
       setInterval(addCalcPower, 1000);
+      setInterval(updatePlanetTimer, 1000);
       
       function formatBonus(num) {
           if (num.eq(0)) return "0";
@@ -461,6 +496,16 @@
           return speed;
       }
 
+      // 星球科技加成 = 2^当前星球
+      function getPlanetTechBonus() {
+          return new Decimal(2).pow(planetCurrent);
+      }
+      
+      // 星球算力加成 = 当前星球^3
+      function getPlanetCalcBonus() {
+          return new Decimal(planetCurrent).pow(3);
+      }
+
       function addOne() {
           var techBonus = new Decimal(1);
           if (simulationValue.gte(1)) {
@@ -482,7 +527,7 @@
           }
           
           var techIndex = 1 + geneMutationLevel * 0.01;
-          var gain = Mp.pow(techIndex);
+          var gain = Mp.mul(getPlanetTechBonus()).pow(techIndex);
           sat = sat.add(gain);
           
           if (sat.gt(1000)) {
@@ -648,13 +693,38 @@
           }
       }
       
+      function checkPlanetUnlock() {
+          if (!planetUnlocked && calcPower.gt(500000)) {
+              planetUnlocked = true;
+              document.getElementById("planetBtn").style.display = "inline-block";
+          }
+      }
+      
       function addCalcPower() {
           if (calcPowerActive) {
-              calcPower = calcPower.add(calcPowerRate);
+              var actualRate = calcPowerRate.mul(getPlanetCalcBonus());
+              if (planetCurrent === 0) actualRate = calcPowerRate;
+              calcPower = calcPower.add(actualRate);
               updateDisplay();
               if (document.getElementById("calcModal").style.display === "block") {
                   updateCalcDisplay();
               }
+          }
+      }
+
+      function updatePlanetTimer() {
+          if (!planetUnlocked) return;
+          
+          planetTimer += 1;
+          
+          if (planetTimer >= planetTimeNeeded) {
+              planetTimer = 0;
+              planetCurrent += 1;
+              planetTimeNeeded = planetTimeNeeded * 2;
+          }
+          
+          if (document.getElementById("planetModal").style.display === "block") {
+              updatePlanetDisplay();
           }
       }
       
@@ -764,6 +834,27 @@
           document.getElementById("betterPopCost").textContent = formatNumber(betterPopCost);
           document.getElementById("betterPopLevel").textContent = betterPopLevel;
           document.getElementById("betterPopBonus").textContent = Math.pow(2, betterPopLevel);
+      }
+
+      function openPlanet() {
+          if (!planetUnlocked) return;
+          document.getElementById("planetModal").style.display = "block";
+          updatePlanetDisplay();
+      }
+      
+      function closePlanet() {
+          document.getElementById("planetModal").style.display = "none";
+      }
+
+      function updatePlanetDisplay() {
+          document.getElementById("planetCurrent").textContent = planetCurrent;
+          document.getElementById("planetNext").textContent = planetCurrent + 1;
+          var remain = planetTimeNeeded - planetTimer;
+          if (remain < 0) remain = 0;
+          document.getElementById("planetTime").textContent = remain.toFixed(1);
+          
+          document.getElementById("planetTechBonus").textContent = formatNumber(getPlanetTechBonus());
+          document.getElementById("planetCalcBonus").textContent = formatNumber(getPlanetCalcBonus());
       }
 
       function openUpdate() {
@@ -1105,9 +1196,7 @@
           document.getElementById("DIP").textContent = formatNumber(DIP1);
           document.getElementById("DIPC").textContent = DIPC.toString();
           
-          // 人口加成：+当前人口
           document.getElementById("IPBonusText").textContent = formatNumber(new Decimal(IP));
-          // 智商加成：×（2^当前人口智商）
           document.getElementById("IQBonusText").textContent = formatNumber(new Decimal(2).pow(IQ));
           
           var dipBonus = new Decimal(0);
@@ -1125,6 +1214,7 @@
           document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
           document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
           document.getElementById("calcBtn").style.display = calcUnlocked ? "inline-block" : "none";
+          document.getElementById("planetBtn").style.display = planetUnlocked ? "inline-block" : "none";
           
           if (document.getElementById("labModal").style.display === "block") {
               updateLabDisplay();
@@ -1137,6 +1227,9 @@
           }
           if (document.getElementById("calcModal").style.display === "block") {
               updateCalcDisplay();
+          }
+          if (document.getElementById("planetModal").style.display === "block") {
+              updatePlanetDisplay();
           }
       }
       
@@ -1181,7 +1274,11 @@
               geneMutationLevel: geneMutationLevel,
               geneMutationCost: geneMutationCost.toString(),
               betterPopLevel: betterPopLevel,
-              betterPopCost: betterPopCost.toString()
+              betterPopCost: betterPopCost.toString(),
+              planetUnlocked: planetUnlocked,
+              planetCurrent: planetCurrent,
+              planetTimeNeeded: planetTimeNeeded,
+              planetTimer: planetTimer
           };
           localStorage.setItem('gameSave', JSON.stringify(gameData));
           console.log('游戏已保存');
@@ -1250,6 +1347,10 @@
               geneMutationCost = new Decimal(gameData.geneMutationCost || 1000);
               betterPopLevel = gameData.betterPopLevel || 0;
               betterPopCost = new Decimal(gameData.betterPopCost || 15000);
+              planetUnlocked = gameData.planetUnlocked || false;
+              planetCurrent = gameData.planetCurrent || 0;
+              planetTimeNeeded = gameData.planetTimeNeeded || 10;
+              planetTimer = gameData.planetTimer || 0;
               
               document.getElementById("maxIPBtn").style.display = research1Purchased ? "inline-block" : "none";
               document.getElementById("maxIQBtn").style.display = research2Purchased ? "inline-block" : "none";
@@ -1257,6 +1358,7 @@
               document.getElementById("dataBtn").style.display = labUnlocked ? "inline-block" : "none";
               document.getElementById("runeBtn").style.display = runeUnlocked ? "inline-block" : "none";
               document.getElementById("calcBtn").style.display = calcUnlocked ? "inline-block" : "none";
+              document.getElementById("planetBtn").style.display = planetUnlocked ? "inline-block" : "none";
               document.getElementById("maxResearch3Btn").style.display = research4Purchased ? "inline-block" : "none";
               
               updateDisplay();
@@ -1308,6 +1410,10 @@
               geneMutationCost = new Decimal(1000);
               betterPopLevel = 0;
               betterPopCost = new Decimal(15000);
+              planetUnlocked = false;
+              planetCurrent = 0;
+              planetTimeNeeded = 10;
+              planetTimer = 0;
               
               document.getElementById("maxIPBtn").style.display = "none";
               document.getElementById("maxIQBtn").style.display = "none";
@@ -1315,6 +1421,7 @@
               document.getElementById("dataBtn").style.display = "none";
               document.getElementById("runeBtn").style.display = "none";
               document.getElementById("calcBtn").style.display = "none";
+              document.getElementById("planetBtn").style.display = "none";
               document.getElementById("maxResearch3Btn").style.display = "none";
               document.getElementById("autoBuyIPBtn").style.display = "none";
               document.getElementById("autoBuyIQBtn").style.display = "none";
@@ -1336,6 +1443,9 @@
           }
           if (event.target == document.getElementById("calcModal")) {
               closeCalc();
+          }
+          if (event.target == document.getElementById("planetModal")) {
+              closePlanet();
           }
       }
       
